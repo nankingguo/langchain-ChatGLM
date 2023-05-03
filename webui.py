@@ -30,18 +30,12 @@ local_doc_qa = LocalDocQA()
 
 
 def get_answer(query, vs_path, history, mode):
-    if vs_path and mode == "知识库问答":
+    if mode == "知识库问答":
         resp, history = local_doc_qa.get_knowledge_based_answer(
-            query=query, vs_path=vs_path, chat_history=history)
-        source = "".join([f"""<details> <summary>出处 {i + 1}</summary>
-{doc.page_content}
-
-<b>所属文件：</b>{doc.metadata["source"]}
-</details>""" for i, doc in enumerate(resp["source_documents"])])
-        history[-1][-1] += source
+            query=query, chat_history=history)
     else:
         resp = local_doc_qa.llm._call(query)
-        history = history + [[query, resp + ("\n\n当前知识库为空，如需基于知识库进行问答，请先加载知识库后，再进行提问。" if mode == "知识库问答" else "")]]
+        history = history + [[query, resp]]
     return history, ""
 
 
@@ -129,19 +123,13 @@ block_css = """.importantButton {
 }"""
 
 webui_title = """
-# 🎉langchain-ChatGLM WebUI🎉
-
-👍 [https://github.com/imClumsyPanda/langchain-ChatGLM](https://github.com/imClumsyPanda/langchain-ChatGLM)
+# 🎉AnalyticDB Vector Database  + Custom text2Vect Model + Custom LLM model🎉
+text2Vect = all-mpnet-base-v2
+LLM = ChatGLM
 
 """
 
-init_message = """欢迎使用 langchain-ChatGLM Web UI！
-
-请在右侧切换模式，目前支持直接与 LLM 模型对话或基于本地知识库问答。
-
-知识库问答模式中，选择知识库名称后，即可开始问答，如有需要可以在选择知识库名称后上传文件/文件夹至知识库。
-
-知识库暂不支持文件删除，该功能将在后续版本中推出。
+init_message = """欢迎使用 AnalyticDB + ChatGLM Web UI！
 """
 
 model_status = init_model()

@@ -21,15 +21,10 @@ if __name__ == "__main__":
                           embedding_device=EMBEDDING_DEVICE,
                           llm_history_len=LLM_HISTORY_LEN,
                           top_k=VECTOR_SEARCH_TOP_K)
-    vs_path = None
-    while not vs_path:
-        filepath = input("Input your local knowledge file path 请输入本地知识文件路径：")
-        vs_path, _ = local_doc_qa.init_knowledge_vector_store(filepath)
     history = []
     while True:
         query = input("Input your question 请输入问题：")
         resp, history = local_doc_qa.get_knowledge_based_answer(query=query,
-                                                                vs_path=vs_path,
                                                                 chat_history=history)
         if REPLY_WITH_SOURCE:
             print(resp)

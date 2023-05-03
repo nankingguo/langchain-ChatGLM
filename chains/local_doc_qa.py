@@ -2,6 +2,7 @@ from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
+from langchain.retrievers import ChatGPTPluginRetriever
 from langchain.document_loaders import UnstructuredFileLoader
 from models.chatglm_llm import ChatGLM
 import sentence_transformers
@@ -107,7 +108,6 @@ class LocalDocQA:
 
     def get_knowledge_based_answer(self,
                                    query,
-                                   vs_path,
                                    chat_history=[], ):
         prompt_template = """基于以下已知信息，简洁和专业的来回答用户的问题。
     如果无法从中得到答案，请说 "根据已知信息无法回答该问题" 或 "没有提供足够的相关信息"，不允许在答案中添加编造成分，答案请使用中文。
@@ -121,11 +121,11 @@ class LocalDocQA:
             template=prompt_template,
             input_variables=["context", "question"]
         )
-        self.llm.history = chat_history
-        vector_store = FAISS.load_local(vs_path, self.embeddings)
+        global_chat_history = chat_history
+        retriever = ChatGPTPluginRetriever(url="http://127.0.0.1:8000", bearer_token="foo")
         knowledge_chain = RetrievalQA.from_llm(
             llm=self.llm,
-            retriever=vector_store.as_retriever(search_kwargs={"k": self.top_k}),
+            retriever=retriever,
             prompt=prompt
         )
         knowledge_chain.combine_documents_chain.document_prompt = PromptTemplate(

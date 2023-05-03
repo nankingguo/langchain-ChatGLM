@@ -77,7 +77,6 @@ async def get_answer(UserQuery: Query):
     history = []
     try:
         resp, history = local_doc_qa.get_knowledge_based_answer(query=UserQuery.query,
-                                                                vs_path=vs_path,
                                                                 chat_history=history)
         if REPLY_WITH_SOURCE:
             response["answer"] = resp
