@@ -151,6 +151,11 @@ webui_title = """
 default_vs = vs_list[0] if len(vs_list) > 0 else "为空"
 init_message = f"""欢迎使用 langchain+AnalyticDB+ChatGLM Web UI！
 
+！！！【特别提示：
+本Demo采用的大模型为开源 THUDM/ChatGLM-6B，详细参考：https://github.com/THUDM/ChatGLM-6B，仅为学习使用。
+阿里云不对您在镜像上使用的第三方模型的合法性、安全性、准确性进行任何保证，并不对由此引发的任何损害承担责任；
+您应自觉遵守在镜像上安装的第三方模型的用户协议、使用规范和相关法律法规，并就使用第三方模型的合法性、合规性自行承担相关责任。】！！！
+
 请在右侧切换模式，目前支持直接与 LLM 模型对话或基于本地知识库问答。
 
 知识库问答模式，选择知识库名称后，即可开始问答，当前知识库{default_vs}，如有需要可以在选择知识库名称后上传文件/文件夹至知识库。
