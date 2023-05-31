@@ -50,8 +50,8 @@ UPLOAD_ROOT_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "con
 
 PROMPT_TEMPLATE = """
 任务: 根据提供的知识,专业地回答问题:"{question}"
-知识: {context} 
 要求: 1. 如果无法从中得到答案，请说 "现有知识库中无足够信息,暂时无法回答"; 2. 不允许在答案中添加编造成分; 3. 答案请使用中文。
+知识: {context} 
 回答:
 """
 # 文本分句长度
