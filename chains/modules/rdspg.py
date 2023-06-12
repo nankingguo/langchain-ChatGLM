@@ -11,6 +11,8 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSON, UUID
 from sqlalchemy.orm import Session, declarative_base, relationship
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.sql import text
+from pgvector.sqlalchemy import Vector
+
 
 ###from sqlalchemy.sql.expression import func
 
@@ -91,7 +93,7 @@ class BaseEmbeddingStore(BaseModel):
     )
     collection = relationship(CollectionStore, back_populates="embeddings")
 
-###    embedding: sqlalchemy.Column = sqlalchemy.Column(ARRAY(REAL))
+    embedding: sqlalchemy.Column = sqlalchemy.Column(Vector(1536))
     document = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     cmetadata = sqlalchemy.Column(JSON, nullable=True)
 
@@ -197,7 +199,6 @@ class RDSPG(VectorStore):
             "cosine": self.EmbeddingStore.embedding.cosine_distance,
             "max_inner_product": self.EmbeddingStore.embedding.max_inner_product,
         }
-        print("NANJING DEBUG => %s" % _map)
         return _map[self.distance_strategy]
 
     def connect(self) -> sqlalchemy.engine.Connection:
@@ -437,7 +438,7 @@ class RDSPG(VectorStore):
         results: List[QueryResult] = (
             session.query(
                 self.EmbeddingStore,
-                self._distance_fn()
+                self._distance_fn()(self.EmbeddingStore.embedding, "embedding").label("distance"),
             )
             .filter(filter_by)
             .order_by(sqlalchemy.asc("distance"))
