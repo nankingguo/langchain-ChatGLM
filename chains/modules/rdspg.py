@@ -9,6 +9,9 @@ import sqlalchemy
 ###from sqlalchemy import REAL, Index
 from sqlalchemy.dialects.postgresql import ARRAY, JSON, UUID
 from sqlalchemy.orm import Session, declarative_base, relationship
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.sql import text
+
 ###from sqlalchemy.sql.expression import func
 
 from langchain.docstore.document import Document
@@ -97,18 +100,18 @@ class BaseEmbeddingStore(BaseModel):
 
 ###nanjing
     # The following line creates an index named 'langchain_pg_embedding_vector_idx'
-    langchain_pg_embedding_vector_idx = Index(
-        "langchain_pg_embedding_vector_idx",
-        embedding,
-        postgresql_using="ann",
-        postgresql_with={
-            "distancemeasure": "L2",
-            "dim": 1024,
-            "pq_segments": 64,
-            "hnsw_m": 100,
-            "pq_centers": 2048,
-        },
-    )
+#    langchain_pg_embedding_vector_idx = Index(
+#        "langchain_pg_embedding_vector_idx",
+#        embedding,
+#        postgresql_using="ann",
+#        postgresql_with={
+#            "distancemeasure": "L2",
+#            "dim": 1024,
+#            "pq_segments": 64,
+#            "hnsw_m": 100,
+#            "pq_centers": 2048,
+#        },
+#    )
 ###nanjing
 
 
@@ -194,6 +197,7 @@ class RDSPG(VectorStore):
             "cosine": self.EmbeddingStore.embedding.cosine_distance,
             "max_inner_product": self.EmbeddingStore.embedding.max_inner_product,
         }
+        print("NANJING DEBUG => %s" % _map)
         return _map[self.distance_strategy]
 
     def connect(self) -> sqlalchemy.engine.Connection:
@@ -426,10 +430,14 @@ class RDSPG(VectorStore):
 
             filter_by = sqlalchemy.and_(filter_by, *filter_clauses)
 
+
+        print("NANJING DEBUG => \n %s \n" % self._distance_fn)
+        ###self._distance_fn(embedding).label("distance"),
+
         results: List[QueryResult] = (
             session.query(
                 self.EmbeddingStore,
-                self._distance_fn(embedding).label("distance"),
+                self._distance_fn()
             )
             .filter(filter_by)
             .order_by(sqlalchemy.asc("distance"))
@@ -569,40 +577,40 @@ class RDSPG(VectorStore):
 
         return connection_string
 
-    @classmethod
-    def from_documents(
-        cls: Type[PGVector],
-        documents: List[Document],
-        embedding: Embeddings,
-        collection_name: str = _LANGCHAIN_DEFAULT_COLLECTION_NAME,
-        distance_strategy: DistanceStrategy = "cosine",
-        ids: Optional[List[str]] = None,
-        pre_delete_collection: bool = False,
-        **kwargs: Any,
-    ) -> RDSPG:
-        """
-        Return VectorStore initialized from documents and embeddings.
-        Postgres connection string is required
-        Either pass it as a parameter
-        or set the PGVECTOR_CONNECTION_STRING environment variable.
-        """
-
-        texts = [d.page_content for d in documents]
-        metadatas = [d.metadata for d in documents]
-        connection_string = cls.get_connection_string(kwargs)
-
-        kwargs["connection_string"] = connection_string
-
-        return cls.from_texts(
-            texts=texts,
-            embedding,
-            pre_delete_collection=pre_delete_collection,
-            distance_strategy=distance_strategy,
-            metadatas=metadatas,
-            ids=ids,
-            collection_name=collection_name,
-            **kwargs,
-        )
+#    @classmethod
+#    def from_documents(
+#        cls: Type[PGVector],
+#        documents: List[Document],
+#        embedding: Embeddings,
+#        collection_name: str = _LANGCHAIN_DEFAULT_COLLECTION_NAME,
+#        distance_strategy: DistanceStrategy = "cosine",
+#        ids: Optional[List[str]] = None,
+#        pre_delete_collection: bool = False,
+#        **kwargs: Any,
+#    ) -> RDSPG:
+#        """
+#        Return VectorStore initialized from documents and embeddings.
+#        Postgres connection string is required
+#        Either pass it as a parameter
+#        or set the PGVECTOR_CONNECTION_STRING environment variable.
+#        """
+#
+#        texts = [d.page_content for d in documents]
+#        metadatas = [d.metadata for d in documents]
+#        connection_string = cls.get_connection_string(kwargs)
+#
+#        kwargs["connection_string"] = connection_string
+#
+#        return cls.from_texts(
+#            texts=texts,
+#            embedding,
+#            pre_delete_collection=pre_delete_collection,
+#            distance_strategy=distance_strategy,
+#            metadatas=metadatas,
+#            ids=ids,
+#            collection_name=collection_name,
+#            **kwargs,
+#        )
 
     @classmethod
     def connection_string_from_db_params(

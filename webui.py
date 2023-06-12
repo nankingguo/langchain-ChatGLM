@@ -146,10 +146,10 @@ block_css = """.importantButton {
 }"""
 
 webui_title = """
-# ChatGLM-6B + AnalyticDB For PostgreSQL 向量版 + langchain WebUI
+# ChatGLM-6B + RDS For PostgreSQL 向量版 + langchain WebUI
 """
 default_vs = vs_list[0] if len(vs_list) > 0 else "为空"
-init_message = f"""欢迎使用 langchain+AnalyticDB+ChatGLM Web UI！
+init_message = f"""欢迎使用 langchain+RDS+ChatGLM Web UI！
 
 <p><strong><font color="red">【特别提示：
 本Demo采用的大模型为开源 THUDM/ChatGLM-6B，详细参考：https://github.com/THUDM/ChatGLM-6B，仅为学习使用。
