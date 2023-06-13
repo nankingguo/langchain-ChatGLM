@@ -1,3 +1,9 @@
 component 0,component 1,component 2,请选择使用模式,flag,username,timestamp
 你好,langchain,/root/langchain-ChatGLM/flagged/component 2/tmpcw1krmx_.json,LLM 对话,,e501f6dae5c04472af77c67aa752974f,2023-06-13 00:41:58.202856
 你是谁,langchain,/root/langchain-ChatGLM/flagged/component 2/tmp_m8seyt3.json,LLM 对话,,e501f6dae5c04472af77c67aa752974f,2023-06-13 00:42:09.915882
+报错,langchain,/root/langchain-ChatGLM/flagged/component 2/tmps3_ncu1l.json,知识库问答,,81c256f8bbbf421b9c74f03a3bcaf309,2023-06-13 01:52:25.450960
+你是谁,langchain,/root/langchain-ChatGLM/flagged/component 2/tmp3uik1j6p.json,知识库问答,,81c256f8bbbf421b9c74f03a3bcaf309,2023-06-13 01:52:35.187425
+你是谁,langchain,/root/langchain-ChatGLM/flagged/component 2/tmp8v5r1wq1.json,LLM 对话,,81c256f8bbbf421b9c74f03a3bcaf309,2023-06-13 01:52:50.564172
+洛霄是谁,,/root/langchain-ChatGLM/flagged/component 2/tmplonakr0g.json,知识库问答,,dbb8bb3ac7d24c0eb1c859b7f2d889e1,2023-06-13 02:32:40.842414
+洛霄,,/root/langchain-ChatGLM/flagged/component 2/tmpqkikh7ye.json,知识库问答,,dbb8bb3ac7d24c0eb1c859b7f2d889e1,2023-06-13 02:33:32.763341
+洛霄是谁？,langchain,/root/langchain-ChatGLM/flagged/component 2/tmpynmjplmd.json,知识库问答,,5c627c2599ce424196033c04748ad239,2023-06-13 02:36:34.781880

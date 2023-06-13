@@ -26,7 +26,7 @@ Base = declarative_base()  # type: Any
 
 ###ADA_TOKEN_COUNT = 1024
 _LANGCHAIN_DEFAULT_COLLECTION_NAME = "langchain"
-PGVECTOR_VECTOR_SIZE = 1024
+PGVECTOR_VECTOR_SIZE = 1536
 DEFAULT_DISTANCE_STRATEGY = "cosine"
 DistanceStrategy = Literal["cosine", "euclidean", "max_inner_product"]
 
@@ -81,7 +81,7 @@ class CollectionStore(BaseModel):
 ###nanjing
 
 
-class EmbeddingStore(BaseModel):
+class BaseEmbeddingStore(BaseModel):
     __tablename__ = "langchain_pg_embedding"
 
     collection_id = sqlalchemy.Column(
@@ -93,7 +93,7 @@ class EmbeddingStore(BaseModel):
     )
     collection = relationship(CollectionStore, back_populates="embeddings")
 
-    embedding: sqlalchemy.Column = sqlalchemy.Column(Vector(1024))
+    embedding: sqlalchemy.Column = sqlalchemy.Column(Vector(1536))
     document = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     cmetadata = sqlalchemy.Column(JSON, nullable=True)
 
@@ -169,7 +169,18 @@ class RDSPG(VectorStore):
         ###nanjing
         self.pre_delete_collection = pre_delete_collection
         self.logger = logger or logging.getLogger(__name__)
+        ###nanjing
+        vector_size = vector_size or len(embedding_function.embed_documents(["foo"])[0])
+        ###nanjing
 
+        class EmbeddingStore(BaseEmbeddingStore):
+            @declared_attr
+            def embedding(cls):
+                return BaseEmbeddingStore.__table__.c.get(
+                    "embedding", sqlalchemy.Column(Vector(vector_size))
+                )
+
+        self.EmbeddingStore = EmbeddingStore
         self.__post_init__()
 
     def __post_init__(
@@ -184,9 +195,9 @@ class RDSPG(VectorStore):
 
     def _distance_fn(self) -> Callable:
         _map = {
-            "euclidean": EmbeddingStore.embedding.l2_distance,
-            "cosine": EmbeddingStore.embedding.cosine_distance,
-            "max_inner_product": EmbeddingStore.embedding.max_inner_product,
+            "euclidean": self.EmbeddingStore.embedding.l2_distance,
+            "cosine": self.EmbeddingStore.embedding.cosine_distance,
+            "max_inner_product": self.EmbeddingStore.embedding.max_inner_product,
         }
         return _map[self.distance_strategy]
 
@@ -294,7 +305,7 @@ class RDSPG(VectorStore):
             if not collection:
                 raise ValueError("Collection not found")
             for text, metadata, embedding, id in zip(texts, metadatas, embeddings, ids):
-                embedding_store = EmbeddingStore(
+                embedding_store = self.EmbeddingStore(
                     embedding=embedding,
                     document=text,
                     cmetadata=metadata,
@@ -334,7 +345,7 @@ class RDSPG(VectorStore):
             if not collection:
                 raise ValueError("Collection not found")
             for text, metadata, embedding, id in zip(texts, metadatas, embeddings, ids):
-                embedding_store = EmbeddingStore(
+                embedding_store = self.EmbeddingStore(
                     embedding=embedding,
                     document=text,
                     cmetadata=metadata,
@@ -403,7 +414,7 @@ class RDSPG(VectorStore):
             if not collection:
                 raise ValueError("Collection not found")
 
-        filter_by = EmbeddingStore.collection_id == collection.uuid
+        filter_by = self.EmbeddingStore.collection_id == collection.uuid
 
         if filter is not None:
             filter_clauses = []
@@ -413,10 +424,10 @@ class RDSPG(VectorStore):
                     value_case_insensitive = {
                         k.lower(): v for k, v in value.items()
                     }
-                    filter_by_metadata = EmbeddingStore.cmetadata[key].astext.in_(value_case_insensitive[IN])
+                    filter_by_metadata = self.EmbeddingStore.cmetadata[key].astext.in_(value_case_insensitive[IN])
                     filter_clauses.append(filter_by_metadata)
                 else:
-                    filter_by_metadata = EmbeddingStore.cmetadata[key].astext == str(value)
+                    filter_by_metadata = self.EmbeddingStore.cmetadata[key].astext == str(value)
                     filter_clauses.append(filter_by_metadata)
 
             filter_by = sqlalchemy.and_(filter_by, *filter_clauses)
@@ -427,14 +438,14 @@ class RDSPG(VectorStore):
 
         results: List[QueryResult] = (
             session.query(
-                EmbeddingStore,
-                self._distance_fn()(EmbeddingStore.embedding).label("distance"),
+                self.EmbeddingStore,
+                self._distance_fn()(self.EmbeddingStore.embedding).label("distance"),
             )
             .filter(filter_by)
             .order_by(sqlalchemy.asc("distance"))
             .join(
                 CollectionStore,
-                EmbeddingStore.collection_id == CollectionStore.uuid,
+                self.EmbeddingStore.collection_id == CollectionStore.uuid,
             )
             .limit(k)
             .all()
