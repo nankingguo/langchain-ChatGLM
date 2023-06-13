@@ -179,6 +179,7 @@ class RDSPG(VectorStore):
         Initialize the store.
         """
         self._conn = self.connect()
+        self.create_vector_extension()
         self.create_tables_if_not_exists()
         self.create_collection()
 
