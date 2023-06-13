@@ -1,6 +1,6 @@
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.document_loaders import UnstructuredFileLoader
-from chains.modules.rdspg import RDSPG
+from chains.modules.polardbpg import PolarDBPG
 from models.chatglm_llm import ChatGLM
 from configs.model_config import *
 from textsplitter import ChineseTextSplitter
@@ -9,7 +9,7 @@ from utils import torch_gc
 from tqdm import tqdm
 import os
 
-CONNECTION_STRING = RDSPG.connection_string_from_db_params(
+CONNECTION_STRING = PolarDBPG.connection_string_from_db_params(
     driver=os.environ.get("PG_DRIVER", "psycopg2cffi"),
     host=os.environ.get("PG_HOST", "localhost"),
     port=int(os.environ.get("PG_PORT", "5432")),
@@ -140,7 +140,7 @@ class LocalDocQA:
                     print(f"{file} 未能成功加载")
         if len(docs) > 0:
             print("文件加载完毕，正在生成向量库")
-            RDSPG.from_documents(documents=docs, embedding=self.embeddings,
+            PolarDBPG.from_documents(documents=docs, embedding=self.embeddings,
                                       connection_string=CONNECTION_STRING, collection_name=vs_path)
             torch_gc()
             return vs_path, loaded_files
@@ -154,7 +154,7 @@ class LocalDocQA:
                                    chat_history=[],
                                    streaming: bool = STREAMING):
         print(vs_path)
-        vector_store = RDSPG.from_documents(documents=[], embedding=self.embeddings,
+        vector_store = PolarDBPG.from_documents(documents=[], embedding=self.embeddings,
                                                  connection_string=CONNECTION_STRING, collection_name=vs_path)
         related_docs_with_score = vector_store.similarity_search_with_score(query,
                                                                             k=self.top_k)
@@ -184,7 +184,7 @@ class LocalDocQA:
             torch_gc()
 
     def get_collections(self):
-        return RDSPG(connection_string=CONNECTION_STRING, embedding_function=self.embeddings).get_collections()
+        return PolarDBPG(connection_string=CONNECTION_STRING, embedding_function=self.embeddings).get_collections()
 
 
 if __name__ == "__main__":
