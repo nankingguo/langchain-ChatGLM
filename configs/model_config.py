@@ -49,8 +49,8 @@ VS_ROOT_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "vector_
 UPLOAD_ROOT_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "content")
 
 PROMPT_TEMPLATE = """
-任务: 根据提供的知识,专业地回答问题:"{question}"
-要求: 1. 如果无法从中得到答案，请说 "现有知识库中无足够信息,暂时无法回答"; 2. 不允许在答案中添加编造成分; 3. 答案请使用中文。
+任务: {question}
+要求: 1. 如果无法从中得到答案，请说 "现有知识库中无足够信息,暂时无法回答"; 2. 不允许在答案中添加编造成分; 3. 如果问题是用英文提用，则用英文回复。
 知识: {context} 
 回答:
 """
